@@ -11,7 +11,6 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import net.androidcart.rxbusretrofitschema.API_STATE;
-import net.androidcart.rxbusretrofitschema.ApiHandler;
 import net.androidcart.rxbusretrofitschema.RxBusRetrofitSchema;
 
 import java.io.IOException;
@@ -68,6 +67,13 @@ public class RxBusRetrofitProcessor extends AbstractProcessor {
     private ClassName okHttpRequest(){
         return ClassName.get("okhttp3", "Request");
     }
+    private ClassName retrofitResponse(){
+        return ClassName.get("retrofit2", "Response");
+    }
+
+    private ClassName okHttpResponseBody(){
+        return ClassName.get("okhttp3", "ResponseBody");
+    }
 
     private ClassName retrofitCall(){
         return ClassName.get("retrofit2", "Call");
@@ -90,7 +96,7 @@ public class RxBusRetrofitProcessor extends AbstractProcessor {
         String state = API_STATE.class.getName();
 
         //TODO: call handler
-        block.addStatement("if (apiHandler != null) apiHandler.onApiStart()");
+        block.addStatement("if (apiHandler != null) apiHandler.onApiStart(type, request, startObj)");
         block.addStatement("bus.publish(new " + itemName + "(" + state + ".START, type , startObj, request, startObj))");
 
         block.addStatement("failHelper.put(call, startObj)");
@@ -101,12 +107,14 @@ public class RxBusRetrofitProcessor extends AbstractProcessor {
         "   public void onResponse(Call call, retrofit2.Response response) {" + "\n" +
         "       failHelper.remove(call);" + "\n" +
         "       if(response.isSuccessful()) {" + "\n" +
-        "           if (apiHandler != null) apiHandler.onApiSuccess();" + "\n" +
-        "           bus.publish(new " + itemName + "(" + state + ".SUCCESS, type, response.body(), request, startObj));" + "\n" +
+        "           Object resBody = response.body();" + "\n" +
+        "           if (apiHandler != null) apiHandler.onApiSuccess(type, resBody, response, request, startObj);" + "\n" +
+        "           bus.publish(new " + itemName + "(" + state + ".SUCCESS, type, resBody, request, startObj));" + "\n" +
         "           " + "\n" +
         "       } else {" + "\n" +
-        "           if (apiHandler != null) apiHandler.onApiFailure();" + "\n" +
-        "           bus.publish(new " + itemName + "(" + state + ".FAILURE, type, response.errorBody(), request, startObj));" + "\n" +
+        "           okhttp3.ResponseBody errBody = response.errorBody();" + "\n" +
+        "           if (apiHandler != null) apiHandler.onApiFailure(type, errBody, response, request, startObj);" + "\n" +
+        "           bus.publish(new " + itemName + "(" + state + ".FAILURE, type, errBody, request, startObj));" + "\n" +
         "           " + "\n" +
         "       }" + "\n" +
         "   }" + "\n" +
@@ -115,7 +123,7 @@ public class RxBusRetrofitProcessor extends AbstractProcessor {
         "   @Override" + "\n" +
         "   public void onFailure(Call call, Throwable t) {" + "\n" +
         "       Object startObj = failHelper.remove(call);" + "\n" +
-        "       apiHandler.onApiFailure();" + "\n" +
+        "       apiHandler.onGeneralFailure(type, t, request, startObj);" + "\n" +
         "       bus.publish(new " + itemName + "(" + state + ".FAILURE, type, t, request, startObj));" + "\n" +
         "   }" + "\n" +
         "});" + "\n" +
@@ -171,7 +179,7 @@ public class RxBusRetrofitProcessor extends AbstractProcessor {
 
             ClassName schemaClass = ClassName.get(packageName, schemaName);
 
-            ClassName apiTypeClassName = ClassName.get(packageName, schemaName + "API_TYPE");
+            ClassName apiTypeClassName = ClassName.get(packageName, schemaName + "ApiType");
             ClassName apiItemClassName = ClassName.get(packageName, schemaName + "ApiItem");
 
             String APICallbackMethodsName = schemaName + "Callback"; //"CallbackMethods" ;
@@ -209,6 +217,7 @@ public class RxBusRetrofitProcessor extends AbstractProcessor {
             publisher.addMethod(publisherConstructorBuilder.build());
 
             publisher.addMethod( MethodSpec.methodBuilder("subscribe")
+                    .addModifiers(Modifier.PUBLIC)
                     .addParameter(consumerWithApiItemTN, "action")
                     .beginControlFlow("try")
                             .addStatement("bus.subscribe(action)")
@@ -218,6 +227,7 @@ public class RxBusRetrofitProcessor extends AbstractProcessor {
             .build());
 
             publisher.addMethod( MethodSpec.methodBuilder("unregister")
+                    .addModifiers(Modifier.PUBLIC)
                     .addParameter(consumerWithApiItemTN, "action")
                     .beginControlFlow("try")
                         .addStatement("bus.unregister(action)")
@@ -268,9 +278,9 @@ public class RxBusRetrofitProcessor extends AbstractProcessor {
                     .build();
             apiItem.addMethod(apiItemConstructor);
 
-            //API_TYPE
+            //ApiType
             TypeSpec.Builder apiType = TypeSpec
-                    .enumBuilder(schemaName + "API_TYPE" )
+                    .enumBuilder(schemaName + "ApiType" )
                     .addModifiers(Modifier.PUBLIC);
 
 
@@ -279,7 +289,35 @@ public class RxBusRetrofitProcessor extends AbstractProcessor {
             TypeSpec.Builder apiHandlerBuilder = TypeSpec
                     .classBuilder(apiHandlerClassName )
                     .addModifiers(Modifier.PUBLIC)
-                    .addMethod(); //TODO:
+
+                    .addMethod(MethodSpec.methodBuilder("onApiStart")
+                        .addParameter(apiTypeClassName, "type")
+                        .addParameter(okHttpRequest(), "request")
+                        .addParameter(Object.class, "startObject")
+                        .build())
+
+                    .addMethod(MethodSpec.methodBuilder("onApiSuccess")
+                            .addParameter(apiTypeClassName, "type")
+                            .addParameter(Object.class, "body")
+                            .addParameter(retrofitResponse(), "response")
+                            .addParameter(okHttpRequest(), "request")
+                            .addParameter(Object.class, "startObject")
+                            .build())
+
+                    .addMethod(MethodSpec.methodBuilder("onApiFailure")
+                            .addParameter(apiTypeClassName, "type")
+                            .addParameter(okHttpResponseBody(), "errorBody")
+                            .addParameter(retrofitResponse(), "response")
+                            .addParameter(okHttpRequest(), "request")
+                            .addParameter(Object.class, "startObject")
+                            .build())
+
+                    .addMethod(MethodSpec.methodBuilder("onGeneralFailure")
+                            .addParameter(apiTypeClassName, "type")
+                            .addParameter(Throwable.class, "throwable")
+                            .addParameter(okHttpRequest(), "request")
+                            .addParameter(Object.class, "startObject")
+                            .build());
 
             //APICallbackMethods
             TypeSpec.Builder apiMethods = TypeSpec
@@ -405,7 +443,7 @@ public class RxBusRetrofitProcessor extends AbstractProcessor {
 
 
 
-                final String startObjectName = "startObjectNameHelperLongName";
+                final String startObjectName = "startObject"; //"startObjectNameHelperLongName";
                 MethodSpec.Builder hrMethod = MethodSpec
                         .methodBuilder(name)
                         .addModifiers(Modifier.PUBLIC)
@@ -416,7 +454,7 @@ public class RxBusRetrofitProcessor extends AbstractProcessor {
                     paramsNames.add(ve.getSimpleName().toString());
                 }
                 hrMethod.addParameter(Object.class, startObjectName);
-                hrMethod.addStatement(String.format("callApi(%sAPI_TYPE.%s, api.%s(%s), %s)", schemaName, name, name, String.join(",", paramsNames ), startObjectName));
+                hrMethod.addStatement(String.format("callApi(%sApiType.%s, api.%s(%s), %s)", schemaName, name, name, String.join(",", paramsNames ), startObjectName));
 
 
                 MethodSpec.Builder hrMethodSimple = MethodSpec
@@ -426,7 +464,7 @@ public class RxBusRetrofitProcessor extends AbstractProcessor {
                 for (VariableElement ve : eMethod.getParameters() ){
                     hrMethodSimple.addParameter(TypeName.get(ve.asType()), ve.getSimpleName().toString());
                 }
-                hrMethodSimple.addStatement(String.format("callApi(%sAPI_TYPE.%s, api.%s(%s))", schemaName, name, name, String.join(",", paramsNames )));
+                hrMethodSimple.addStatement(String.format("callApi(%sApiType.%s, api.%s(%s))", schemaName, name, name, String.join(",", paramsNames )));
 
                 publisher.addMethod(hrMethod.build());
                 publisher.addMethod(hrMethodSimple.build());
@@ -460,6 +498,10 @@ public class RxBusRetrofitProcessor extends AbstractProcessor {
                         .writeTo(filer);
 
                 JavaFile.builder(packageName, publisher.build())
+                        .build()
+                        .writeTo(filer);
+
+                JavaFile.builder(packageName, apiHandlerBuilder.build())
                         .build()
                         .writeTo(filer);
             } catch (IOException e) {

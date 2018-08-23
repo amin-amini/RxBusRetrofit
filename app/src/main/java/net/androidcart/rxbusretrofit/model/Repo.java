@@ -24,7 +24,7 @@ public class Repo {
     private String fullName;
     @SerializedName("owner")
     @Expose
-    private Owner owner;
+    private User owner;
     @SerializedName("private")
     @Expose
     private Boolean _private;
@@ -259,11 +259,11 @@ public class Repo {
         this.fullName = fullName;
     }
 
-    public Owner getOwner() {
+    public User getOwner() {
         return owner;
     }
 
-    public void setOwner(Owner owner) {
+    public void setOwner(User owner) {
         this.owner = owner;
     }
 

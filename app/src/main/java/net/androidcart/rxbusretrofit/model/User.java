@@ -8,7 +8,7 @@ package net.androidcart.rxbusretrofit.model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Owner {
+public class User {
 
     @SerializedName("login")
     @Expose
