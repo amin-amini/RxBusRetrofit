@@ -17,6 +17,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import okhttp3.Request;
+import retrofit2.Response;
 
 /**
  * Created by Amin Amini on 8/23/18.
@@ -62,14 +63,14 @@ public class MyApp extends Application {
                         "\n\trequest: " + request  );
             }
             @Override
-            public void listReposResult(List<Repo> result, Request request, Object startObject) {
+            public void listReposResult(List<Repo> result, Request request, Object startObject, Response response) {
                 Log.d(MyApp.LOG, "Application: listReposResult"+
                         "\n\t  result   : " + result +
                         "\n\t  request  : " + request  +
                         "\n\tstartObject: " + startObject  );
             }
             @Override
-            public void listReposFailure(Object error, Request request, Object startObject) {
+            public void listReposFailure(Object error, Request request, Object startObject, Response response) {
                 Log.d(MyApp.LOG, "Application: listReposFailure"+
                         "\n\t   error   : " + error +
                         "\n\t  request  : " + request  +
@@ -83,14 +84,14 @@ public class MyApp extends Application {
                         "\n\trequest: " + request  );
             }
             @Override
-            public void listFollowersResult(List<User> result, Request request, Object startObject) {
+            public void listFollowersResult(List<User> result, Request request, Object startObject, Response response) {
                 Log.d(MyApp.LOG, "Application: listFollowersResult"+
                         "\n\t  result   : " + result +
                         "\n\t  request  : " + request  +
                         "\n\tstartObject: " + startObject  );
             }
             @Override
-            public void listFollowersFailure(Object error, Request request, Object startObject) {
+            public void listFollowersFailure(Object error, Request request, Object startObject, Response response) {
                 Log.d(MyApp.LOG, "Application: listFollowersFailure"+
                         "\n\t   error   : " + error +
                         "\n\t  request  : " + request  +

@@ -13,7 +13,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     @Inject GitHubServicePublisher api;
 
-    private GitHubServiceCallbackMapper apiMapper;
+    protected GitHubServiceCallbackMapper apiMapper;
     protected GitHubServiceCallback getApiCallback(){return null;}
 
     @Override

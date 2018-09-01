@@ -15,6 +15,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import okhttp3.Request;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -28,6 +29,9 @@ public class MainActivity extends BaseActivity {
 
         api.listFollowers("amin-amini");
         api.listRepos("amin-amini", "testStartObject");
+
+        api.listRepos(apiMapper, "amin-amini", "testStartObjectLocal");
+
     }
 
     @Override
@@ -40,14 +44,14 @@ public class MainActivity extends BaseActivity {
                         "\n\trequest: " + request  );
             }
             @Override
-            public void listReposResult(List<Repo> result, Request request, Object startObject) {
+            public void listReposResult(List<Repo> result, Request request, Object startObject, Response response) {
                 Log.d(MyApp.LOG, "MainAct: listReposResult"+
                         "\n\t  result   : " + result +
                         "\n\t  request  : " + request  +
                         "\n\tstartObject: " + startObject  );
             }
             @Override
-            public void listReposFailure(Object error, Request request, Object startObject) {
+            public void listReposFailure(Object error, Request request, Object startObject, Response response) {
                 Log.d(MyApp.LOG, "MainAct: listReposFailure"+
                         "\n\t   error   : " + error +
                         "\n\t  request  : " + request  +
@@ -61,14 +65,14 @@ public class MainActivity extends BaseActivity {
                         "\n\trequest: " + request  );
             }
             @Override
-            public void listFollowersResult(List<User> result, Request request, Object startObject) {
+            public void listFollowersResult(List<User> result, Request request, Object startObject, Response response) {
                 Log.d(MyApp.LOG, "MainAct: listFollowersResult"+
                         "\n\t  result   : " + result +
                         "\n\t  request  : " + request  +
                         "\n\tstartObject: " + startObject  );
             }
             @Override
-            public void listFollowersFailure(Object error, Request request, Object startObject) {
+            public void listFollowersFailure(Object error, Request request, Object startObject, Response response) {
                 Log.d(MyApp.LOG, "MainAct: listFollowersFailure"+
                         "\n\t   error   : " + error +
                         "\n\t  request  : " + request  +
