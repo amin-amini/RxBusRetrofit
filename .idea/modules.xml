@@ -3,12 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/RxBusRetrofit.iml" filepath="$PROJECT_DIR$/RxBusRetrofit.iml" />
-      <module fileurl="file://$PROJECT_DIR$/RxBusRetrofit.iml" filepath="$PROJECT_DIR$/RxBusRetrofit.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/rxBusRetrofit/rxBusRetrofit.iml" filepath="$PROJECT_DIR$/rxBusRetrofit/rxBusRetrofit.iml" />
-      <module fileurl="file://$PROJECT_DIR$/rxBusRetrofit/rxBusRetrofit.iml" filepath="$PROJECT_DIR$/rxBusRetrofit/rxBusRetrofit.iml" />
-      <module fileurl="file://$PROJECT_DIR$/rxBusRetrofitSchema/rxBusRetrofitSchema.iml" filepath="$PROJECT_DIR$/rxBusRetrofitSchema/rxBusRetrofitSchema.iml" />
       <module fileurl="file://$PROJECT_DIR$/rxBusRetrofitSchema/rxBusRetrofitSchema.iml" filepath="$PROJECT_DIR$/rxBusRetrofitSchema/rxBusRetrofitSchema.iml" />
     </modules>
   </component>
